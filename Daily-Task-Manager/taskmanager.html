@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Task Manager</title>
+  <link rel="stylesheet" href="taskstyle.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+    <div class="top-bar">
+        <div>
+            <h4>Welcome Back ...</h4>
+            <button id="theme-toggle" class="theme-btn">🌙</button>
+            <span id="today-date"></span>
+        </div>
+
+    
+    </div>
+
+    <div class="header-icon">
+        📋
+    </div>
+
+    <h1>Daily Task Manager</h1>
+
+    <p>
+        Organize your work, stay productive, and accomplish more every day.
+    </p>
+</header>
+
+    <!-- Counters -->
+    <section class="stats">
+      <div class="stat-card">
+        <span class="stat-icon total">📝</span>
+        <div>
+          <div class="stat-value" id="count-total">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon completed">✅</span>
+        <div>
+          <div class="stat-value" id="count-completed">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon pending">⏳</span>
+        <div>
+          <div class="stat-value" id="count-pending">0</div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Add Task Form -->
+    <section class="form-card">
+      <form id="task-form">
+        <div class="form-row">
+          <input
+            type="text"
+            id="task-input"
+            placeholder="What do you need to do today?"
+            autocomplete="off"
+          />
+          <button type="submit" class="btn btn-primary">＋ Add Task</button>
+        </div>
+        <div class="form-row form-options">
+          <label>Priority
+            <select id="task-priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+          <label>Category
+            <select id="task-category">
+              <option value="study">Study</option>
+              <option value="work">Work</option>
+              <option value="personal" selected>Personal</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label>Due Date
+            <input type="date" id="task-due" />
+          </label>
+        </div>
+        <p class="error-message" id="error-message"></p>
+      </form>
+    </section>
+
+    <!-- Search + Filters -->
+    <section class="toolbar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder=" Search by task, category or priority..." />
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+        <button class="filter-btn" data-filter="pending">Pending</button>
+      </div>
+    </section>
+
+    <!-- Clear Completed -->
+    <div class="clear-row" id="clear-row" hidden>
+      <button class="btn btn-danger-ghost" id="clear-completed">🗑 Clear Completed</button>
+    </div>
+
+    <!-- Task List -->
+    <ul class="task-list" id="task-list"></ul>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">📋</div>
+     <h3>No Tasks Found</h3>
+
+<p id="empty-message">
+
+Start planning your day by adding your first task.
+
+</p>
+    </div>
+
+    <footer class="footer">
+      Your tasks are saved automatically in your browser.
+    </footer>
+  </main>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="confirm-modal" hidden>
+    <div class="modal">
+      <h3>Delete this task?</h3>
+      <p>This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="cancel-delete">Cancel</button>
+        <button class="btn btn-danger" id="confirm-delete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="taskjava.js"></script>
+</body>
+</html>
