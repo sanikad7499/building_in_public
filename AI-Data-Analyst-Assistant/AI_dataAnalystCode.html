@@ -1,0 +1,333 @@
+<div id="dda-root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  #dda-root {
+    --bg: #0E1216;
+    --surface: #151B22;
+    --surface-2: #1B232C;
+    --border: #263140;
+    --text: #E7ECF1;
+    --text-muted: #8B98A6;
+    --accent: #2DD4BF;
+    --accent-dim: #1B4D47;
+    --amber: #F2A73B;
+    --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --disp: 'Space Grotesk', 'Inter', sans-serif;
+
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  #dda-root * { box-sizing: border-box; }
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  .dda-header {
+    padding: 22px 26px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(180deg, var(--surface), var(--bg));
+  }
+  .dda-title { display: flex; align-items: center; gap: 10px; }
+  .dda-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 rgba(45,212,191,.5); animation: dda-pulse 2.2s infinite; flex-shrink:0; }
+  @keyframes dda-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(45,212,191,.45); }
+    70% { box-shadow: 0 0 0 8px rgba(45,212,191,0); }
+    100% { box-shadow: 0 0 0 0 rgba(45,212,191,0); }
+  }
+  .dda-title h1 { font-family: var(--disp); font-size: 18px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .dda-title p { margin: 2px 0 0; font-size: 12.5px; color: var(--text-muted); }
+  .dda-badge { font-family: var(--mono); font-size: 10.5px; color: var(--accent); border: 1px solid var(--accent-dim); background: rgba(45,212,191,0.07); padding: 4px 9px; border-radius: 20px; letter-spacing: 0.03em; }
+
+  .dda-body { display: grid; grid-template-columns: 260px 1fr; min-height: 480px; }
+  @media (max-width: 700px) { .dda-body { grid-template-columns: 1fr; } }
+
+  .dda-side { border-right: 1px solid var(--border); padding: 18px; background: var(--surface); display: flex; flex-direction: column; gap: 14px; }
+  @media (max-width: 700px) { .dda-side { border-right: none; border-bottom: 1px solid var(--border); } }
+  .dda-side h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin: 0 0 6px; font-weight: 600; }
+
+  .dda-btnrow { display: flex; gap: 8px; }
+  .dda-btn { flex: 1; font-family: var(--sans); font-size: 12.5px; font-weight: 500; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; transition: border-color .15s, transform .1s; }
+  .dda-btn:hover { border-color: var(--accent); }
+  .dda-btn:active { transform: scale(0.97); }
+  .dda-btn.primary { background: var(--accent); color: #06211D; border-color: var(--accent); font-weight: 600; }
+  .dda-btn.primary:hover { filter: brightness(1.08); }
+  #dda-file { display: none; }
+
+  .dda-meta { font-family: var(--mono); font-size: 11.5px; color: var(--text-muted); line-height: 1.7; }
+  .dda-meta b { color: var(--text); }
+
+  .dda-preview { border: 1px solid var(--border); border-radius: 8px; overflow: auto; max-height: 220px; background: var(--bg); }
+  .dda-preview table { border-collapse: collapse; width: 100%; font-family: var(--mono); font-size: 10.5px; }
+  .dda-preview th { position: sticky; top: 0; background: var(--surface-2); text-align: left; padding: 6px 8px; color: var(--accent); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .dda-preview td { padding: 5px 8px; border-bottom: 1px solid #1c242d; color: var(--text-muted); white-space: nowrap; }
+
+  .dda-suggest { display: flex; flex-direction: column; gap: 6px; }
+  .dda-chip { text-align: left; font-family: var(--sans); font-size: 11.5px; color: var(--text-muted); background: transparent; border: 1px dashed var(--border); border-radius: 7px; padding: 7px 9px; cursor: pointer; }
+  .dda-chip:hover { border-color: var(--amber); color: var(--text); }
+
+  .dda-main { display: flex; flex-direction: column; }
+  .dda-chat { flex: 1; padding: 20px 22px; overflow-y: auto; max-height: 460px; display: flex; flex-direction: column; gap: 16px; }
+  .dda-msg { max-width: 88%; }
+  .dda-msg.user { align-self: flex-end; }
+  .dda-msg.assistant { align-self: flex-start; }
+  .dda-bubble { padding: 11px 14px; border-radius: 10px; font-size: 13.5px; line-height: 1.55; }
+  .dda-msg.user .dda-bubble { background: var(--accent-dim); border: 1px solid #245952; color: #D8FBF5; border-bottom-right-radius: 3px; }
+  .dda-msg.assistant .dda-bubble { background: var(--surface-2); border: 1px solid var(--border); border-bottom-left-radius: 3px; }
+  .dda-role { font-family: var(--mono); font-size: 10px; color: var(--text-muted); margin-bottom: 4px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  .dda-chart-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 10px 4px; margin-top: 8px; }
+  .dda-flag { display: flex; gap: 6px; align-items: center; margin-top: 8px; font-size: 11px; color: var(--amber); font-family: var(--mono); }
+
+  .dda-typing { display: flex; gap: 4px; padding: 4px 0; }
+  .dda-typing span { width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted); animation: dda-bounce 1.1s infinite; }
+  .dda-typing span:nth-child(2) { animation-delay: .15s; } .dda-typing span:nth-child(3) { animation-delay: .3s; }
+  @keyframes dda-bounce { 0%,60%,100%{ transform: translateY(0); opacity:.4 } 30%{ transform: translateY(-4px); opacity:1 } }
+
+  .dda-inputrow { border-top: 1px solid var(--border); padding: 14px 18px; display: flex; gap: 8px; background: var(--surface); }
+  .dda-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; color: var(--text); font-family: var(--sans); font-size: 13px; outline: none; }
+  .dda-input:focus { border-color: var(--accent); }
+  .dda-send { background: var(--accent); color: #06211D; border: none; border-radius: 9px; padding: 0 16px; font-weight: 600; font-size: 13px; cursor: pointer; }
+  .dda-send:disabled { opacity: .5; cursor: not-allowed; }
+  .dda-empty { color: var(--text-muted); font-size: 13px; padding: 30px 6px; text-align: center; }
+</style>
+<script>
+(function(){
+  const root = document.getElementById('dda-root');
+  root.innerHTML = `
+    <div class="dda-header">
+      <div class="dda-title">
+        <span class="dda-dot"></span>
+        <div><h1>AI Data Analyst Assistant</h1><p>Ask plain-English questions about your data</p></div>
+      </div>
+      <span class="dda-badge">PROTOTYPE</span>
+    </div>
+    <div class="dda-body">
+      <div class="dda-side">
+        <div>
+          <h2>Data source</h2>
+          <div class="dda-btnrow">
+            <button class="dda-btn primary" id="dda-sample">Use sample data</button>
+            <button class="dda-btn" id="dda-upload">Upload CSV</button>
+          </div>
+          <input type="file" id="dda-file" accept=".csv" />
+        </div>
+        <div class="dda-meta" id="dda-meta">No dataset loaded yet.</div>
+        <div class="dda-preview" id="dda-preview"></div>
+        <div>
+          <h2>Try asking</h2>
+          <div class="dda-suggest" id="dda-suggest"></div>
+        </div>
+      </div>
+      <div class="dda-main">
+        <div class="dda-chat" id="dda-chat">
+          <div class="dda-empty">Load the sample data (or upload your own CSV), then ask a question below to see the assistant in action.</div>
+        </div>
+        <div class="dda-inputrow">
+          <input class="dda-input" id="dda-question" placeholder="e.g. Which region had the highest revenue in June?" />
+          <button class="dda-send" id="dda-send">Ask</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const SAMPLE_CSV = `Month,Region,Category,Revenue,UnitsSold
+Jan,North,Electronics,45000,320
+Jan,South,Electronics,38000,275
+Jan,East,Apparel,22000,540
+Feb,North,Electronics,47000,330
+Feb,South,Apparel,25000,510
+Feb,East,Electronics,31000,240
+Mar,North,Apparel,29000,600
+Mar,South,Electronics,41000,290
+Mar,East,Apparel,24000,505
+Apr,North,Electronics,52000,360
+Apr,South,Apparel,27000,530
+Apr,East,Electronics,35000,260
+May,North,Apparel,31000,615
+May,South,Electronics,44000,300
+May,East,Apparel,26000,520
+Jun,North,Electronics,58000,390
+Jun,South,Apparel,33000,600
+Jun,East,Electronics,39000,275`;
+
+  let dataset = null; // {rows, fields, csvText, name}
+  let chartCounter = 0;
+
+  const metaEl = root.querySelector('#dda-meta');
+  const previewEl = root.querySelector('#dda-preview');
+  const suggestEl = root.querySelector('#dda-suggest');
+  const chatEl = root.querySelector('#dda-chat');
+  const questionEl = root.querySelector('#dda-question');
+  const sendBtn = root.querySelector('#dda-send');
+  const fileInput = root.querySelector('#dda-file');
+
+  function loadCSV(text, name){
+    const parsed = Papa.parse(text.trim(), { header: true, dynamicTyping: true, skipEmptyLines: true });
+    dataset = { rows: parsed.data, fields: parsed.meta.fields, csvText: text.trim(), name };
+    renderMeta();
+    renderPreview();
+    renderSuggestions();
+    chatEl.innerHTML = '<div class="dda-empty">Dataset ready. Ask a question below.</div>';
+  }
+
+  function renderMeta(){
+    metaEl.innerHTML = `<b>${dataset.name}</b><br>${dataset.rows.length} rows &middot; ${dataset.fields.length} columns<br>${dataset.fields.join(', ')}`;
+  }
+
+  function renderPreview(){
+    const rows = dataset.rows.slice(0, 6);
+    let html = '<table><thead><tr>' + dataset.fields.map(f=>`<th>${f}</th>`).join('') + '</tr></thead><tbody>';
+    rows.forEach(r => { html += '<tr>' + dataset.fields.map(f=>`<td>${r[f] ?? ''}</td>`).join('') + '</tr>'; });
+    html += '</tbody></table>';
+    previewEl.innerHTML = html;
+  }
+
+  function renderSuggestions(){
+    const suggestions = [
+      'What was total revenue in April?',
+      'Which region had the highest revenue in June?',
+      'Show the monthly revenue trend for North',
+      'Which category sold more units overall?',
+      'What will revenue be next quarter?'
+    ];
+    suggestEl.innerHTML = '';
+    suggestions.forEach(s => {
+      const b = document.createElement('button');
+      b.className = 'dda-chip';
+      b.textContent = s;
+      b.onclick = () => { questionEl.value = s; askQuestion(); };
+      suggestEl.appendChild(b);
+    });
+  }
+
+  root.querySelector('#dda-sample').onclick = () => loadCSV(SAMPLE_CSV, 'sample_sales_data.csv');
+  root.querySelector('#dda-upload').onclick = () => fileInput.click();
+  fileInput.onchange = (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => loadCSV(ev.target.result, f.name);
+    reader.readAsText(f);
+  };
+
+  function addMessage(role, html){
+    if (chatEl.querySelector('.dda-empty')) chatEl.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'dda-msg ' + role;
+    wrap.innerHTML = `<div class="dda-role">${role === 'user' ? 'You' : 'Assistant'}</div><div class="dda-bubble">${html}</div>`;
+    chatEl.appendChild(wrap);
+    chatEl.scrollTop = chatEl.scrollHeight;
+    return wrap;
+  }
+
+  function addTyping(){
+    const wrap = document.createElement('div');
+    wrap.className = 'dda-msg assistant';
+    wrap.id = 'dda-typing-msg';
+    wrap.innerHTML = `<div class="dda-role">Assistant</div><div class="dda-bubble"><div class="dda-typing"><span></span><span></span><span></span></div></div>`;
+    chatEl.appendChild(wrap);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+  function removeTyping(){ const t = root.querySelector('#dda-typing-msg'); if (t) t.remove(); }
+
+  async function askQuestion(){
+    const q = questionEl.value.trim();
+    if (!q) return;
+    if (!dataset) { loadCSV(SAMPLE_CSV, 'sample_sales_data.csv'); }
+    addMessage('user', escapeHtml(q));
+    questionEl.value = '';
+    sendBtn.disabled = true;
+    addTyping();
+
+    const systemPrompt = `You are an AI Data Analyst Assistant embedded in a small-business dashboard. You are given a dataset in CSV form and a user's question about it.
+Rules:
+- Answer using ONLY the data provided. Never invent numbers that aren't derivable from it.
+- Do exact arithmetic on the given rows (sums, averages, comparisons, trends over the given time periods).
+- If the question asks for something the data cannot answer (e.g. forecasts, causes, data not present, external context), say so plainly in "answer" and set "needs_human" to true with a short "human_reason".
+- If a comparison or trend would be clearer as a chart, populate "chart"; otherwise set "chart" to null.
+- Respond with ONLY a single valid JSON object, no markdown fences, no commentary, matching exactly this shape:
+{"answer": "string, 1-4 sentences", "needs_human": boolean, "human_reason": "string or empty string", "chart": {"type": "bar", "label": "string", "labels": ["..."], "values": [0]} or null}`;
+
+    const userContent = `Dataset (CSV, ${dataset.rows.length} rows):\n${dataset.csvText}\n\nQuestion: ${q}`;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [{ role: "user", content: userContent }]
+        })
+      });
+      const data = await response.json();
+      let text = (data.content || []).map(b => b.text || '').join('').trim();
+      text = text.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+      let parsed;
+      try { parsed = JSON.parse(text); }
+      catch(e){ parsed = { answer: text || "I couldn't parse a structured answer, but here's the raw response above.", needs_human: true, human_reason: "Response format was unexpected.", chart: null }; }
+
+      removeTyping();
+      const msgWrap = addMessage('assistant', escapeHtml(parsed.answer || 'No answer returned.'));
+      if (parsed.needs_human) {
+        const bubble = msgWrap.querySelector('.dda-bubble');
+        const flag = document.createElement('div');
+        flag.className = 'dda-flag';
+        flag.innerHTML = `⚠ Flagged for human review${parsed.human_reason ? ': ' + escapeHtml(parsed.human_reason) : ''}`;
+        bubble.appendChild(flag);
+      }
+      if (parsed.chart && parsed.chart.labels && parsed.chart.values) {
+        const bubble = msgWrap.querySelector('.dda-bubble');
+        const chartWrap = document.createElement('div');
+        chartWrap.className = 'dda-chart-wrap';
+        const canvasId = 'dda-chart-' + (chartCounter++);
+        chartWrap.innerHTML = `<canvas id="${canvasId}" height="140"></canvas>`;
+        bubble.appendChild(chartWrap);
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        new Chart(ctx, {
+          type: parsed.chart.type === 'line' ? 'line' : 'bar',
+          data: {
+            labels: parsed.chart.labels,
+            datasets: [{
+              label: parsed.chart.label || '',
+              data: parsed.chart.values,
+              backgroundColor: 'rgba(45,212,191,0.55)',
+              borderColor: '#2DD4BF',
+              borderWidth: 1.5,
+              borderRadius: 4,
+              tension: 0.3
+            }]
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: '#8B98A6', font: { size: 10 } }, grid: { color: '#1c242d' } },
+              y: { ticks: { color: '#8B98A6', font: { size: 10 } }, grid: { color: '#1c242d' } }
+            }
+          }
+        });
+      }
+    } catch (err) {
+      removeTyping();
+      addMessage('assistant', 'Something went wrong reaching the model. Please try again. (' + escapeHtml(String(err.message || err)) + ')');
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  sendBtn.onclick = askQuestion;
+  questionEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') askQuestion(); });
+})();
+</script>
